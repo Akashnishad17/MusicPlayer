@@ -13,7 +13,8 @@ export default class AudioProvider extends Component {
             dataProvider: new DataProvider((r1, r2) => r1 !== r2),
             playBack: null,
             sound: null,
-            audio: {}
+            audio: {},
+            isPlaying: false
         };
     }
 
@@ -74,20 +75,23 @@ export default class AudioProvider extends Component {
     }
 
     render() {
-        const {audios, dataProvider, permissionError, playBack, sound, audio} = this.state;
+        const {audios, dataProvider, permissionError, playBack, sound, audio, isPlaying} = this.state;
 
         if(permissionError) {
             return <View style={styles.container}>
                 <Text style={styles.error}>No Permission Granted.</Text>
             </View>
         } else {
-            return <AudioContext.Provider value={
-                {audios, 
-                dataProvider, 
-                playBack, 
-                sound, 
-                audio, 
-                updateState: this.updateState}}>
+            return <AudioContext.Provider 
+                value={{
+                    audios, 
+                    dataProvider, 
+                    playBack, 
+                    sound, 
+                    audio, 
+                    updateState: this.updateState,
+                    isPlaying
+                }}>
                 {this.props.children}
             </AudioContext.Provider>
         }

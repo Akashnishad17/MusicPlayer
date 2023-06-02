@@ -33,20 +33,23 @@ export default class AudioList extends Component {
         }  
     });
 
-    rowRenderer = (type, item) => {
+    rowRenderer = (type, item, index, extendedState) => {
+        const {audio} = this.context;
+
         return <AudioItem title={item.filename} duration={item.duration} 
-            options={() => {
-                this.audio = item;
-                this.showOption(true);
-            }}
-            play={() => this.playAudio(item)} />
+            options={() => this.showOption(true, item)}
+            play={() => this.playAudio(item)}
+            isPlaying={extendedState.isPlaying}
+            active={audio.id === item.id} />
     }
 
-    showOption = (visible) => {
+    showOption = (visible, audio) => {
+        this.audio = audio;
         this.setState({...this.state, modalVisible: visible});
     }
 
     playAudio = async(item) => {
+        this.showOption(false, {});
         const {playBack, sound, audio, updateState} = this.context;
 
         if(sound === null) {
@@ -55,28 +58,35 @@ export default class AudioList extends Component {
             return updateState({
                 playBack: playBack, 
                 sound: status, 
-                audio: item
+                audio: item,
+                isPlaying: true,
             });
         }
 
         if(sound.isLoaded) {
             if(audio.id === item.id) {
                 const status = sound.isPlaying ? await pause(playBack) : await resume(playBack);
-                return updateState({sound: status});
+                return updateState({sound: status, isPlaying: !sound.isPlaying});
             } else {
                 const status = await playNext(playBack, item.uri);
-                return updateState({sound: status, audio: item});
+                return updateState({sound: status, audio: item, isPlaying: true});
             }
         }
     }
 
     render() {
         return <AudioContext.Consumer>
-            {({dataProvider}) => {
+            {({dataProvider, isPlaying}) => {
                 return <View style={styles.container}>
-                    <RecyclerListView dataProvider={dataProvider} layoutProvider={this.layoutProvider} rowRenderer={this.rowRenderer} />
-                    <Option visible={this.state.modalVisible} item={this.audio}
-                        close={() => this.showOption(false)}
+                    <RecyclerListView 
+                        dataProvider={dataProvider} 
+                        layoutProvider={this.layoutProvider} 
+                        rowRenderer={this.rowRenderer}
+                        extendedState={{isPlaying}} />
+                    <Option 
+                        visible={this.state.modalVisible} 
+                        item={this.audio}
+                        close={() => this.showOption(false, {})}
                         play={() => this.playAudio(this.audio)}
                         addPlayList={() => {}} />
                 </View>

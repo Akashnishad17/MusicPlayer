@@ -4,14 +4,23 @@ import { Entypo } from '@expo/vector-icons';
 import color from '../config/color';
 import { convertTime } from '../config/service';
 
-export default function AudioItem({title, duration, options, play}) {
+const renderedPlayPauseIcon = (isPlaying) => {
+    if(isPlaying) {
+        return <Entypo name="controller-paus" size={24} color={color.ACTIVE_FONT} />
+    } else {
+        return <Entypo name="controller-play" size={24} color={color.ACTIVE_FONT} />
+    }
+}
+
+export default function AudioItem({title, duration, options, play, isPlaying, active}) {
     return (
         <>
             <View style={styles.container}>
                 <TouchableWithoutFeedback onPress={play}>
                     <View style={styles.left}>
-                        <View style={styles.thumbnail}>
-                            <Text style={styles.text}>{title[0].toUpperCase()}</Text>
+                        <View style={[styles.thumbnail, {backgroundColor: active ? color.ACTIVE_BG : color.FONT_LIGHT}]}>
+                            {active ? renderedPlayPauseIcon(isPlaying) : 
+                            <Text style={styles.text}>{title[0].toUpperCase()}</Text>}
                         </View>
                         <View style={styles.header}>
                             <Text numberOfLines={1} style={styles.title}>{title}</Text>
@@ -54,7 +63,6 @@ const styles = StyleSheet.create({
     },
     thumbnail: {
         height: 50,
-        backgroundColor: color.FONT_LIGHT,
         flexBasis: 50,
         justifyContent: 'center',
         alignItems: 'center',
