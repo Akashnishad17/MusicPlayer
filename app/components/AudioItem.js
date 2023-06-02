@@ -1,28 +1,31 @@
 import React from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import { Entypo } from '@expo/vector-icons'; 
 import color from '../config/color';
 import { convertTime } from '../config/service';
 
-export default function AudioItem({title, duration, options}) {
+export default function AudioItem({title, duration, options, play}) {
     return (
         <>
             <View style={styles.container}>
-                <View style={styles.left}>
-                    <View style={styles.thumbnail}>
-                        <Text style={styles.text}>{title[0].toUpperCase()}</Text>
+                <TouchableWithoutFeedback onPress={play}>
+                    <View style={styles.left}>
+                        <View style={styles.thumbnail}>
+                            <Text style={styles.text}>{title[0].toUpperCase()}</Text>
+                        </View>
+                        <View style={styles.header}>
+                            <Text numberOfLines={1} style={styles.title}>{title}</Text>
+                            <Text style={styles.time}>{convertTime(duration)}</Text>
+                        </View>
                     </View>
-                    <View style={styles.header}>
-                        <Text numberOfLines={1} style={styles.title}>{title}</Text>
-                        <Text style={styles.time}>{convertTime(duration)}</Text>
-                    </View>
-                </View>
+                </TouchableWithoutFeedback>
                 <View style={styles.right}>
                     <Entypo 
                         name="dots-three-vertical" 
                         size={20} 
                         color={color.FONT_MEDIUM}
-                        onPress={options} />
+                        onPress={options}
+                        style={{padding: 10}} />
                 </View>
             </View>
             <View style={styles.separator}></View>

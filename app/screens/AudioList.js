@@ -5,6 +5,8 @@ import { RecyclerListView, LayoutProvider } from 'recyclerlistview';
 import AudioItem from '../components/AudioItem';
 import color from '../config/color';
 import Option from '../components/Option';
+import { Audio } from 'expo-av';
+import { pause, play, playNext, resume } from '../config/AudioController';
 
 export default class AudioList extends Component {
     static contextType = AudioContext;
@@ -35,8 +37,37 @@ export default class AudioList extends Component {
         return <AudioItem title={item.filename} duration={item.duration} 
             options={() => {
                 this.audio = item;
-                this.setState({...this.state, modalVisible: true});
-            }} />
+                this.showOption(true);
+            }}
+            play={() => this.playAudio(item)} />
+    }
+
+    showOption = (visible) => {
+        this.setState({...this.state, modalVisible: visible});
+    }
+
+    playAudio = async(item) => {
+        const {playBack, sound, audio, updateState} = this.context;
+
+        if(sound === null) {
+            const playBack = new Audio.Sound();
+            const status = await play(playBack, item.uri);
+            return updateState({
+                playBack: playBack, 
+                sound: status, 
+                audio: item
+            });
+        }
+
+        if(sound.isLoaded) {
+            if(audio.id === item.id) {
+                const status = sound.isPlaying ? await pause(playBack) : await resume(playBack);
+                return updateState({sound: status});
+            } else {
+                const status = await playNext(playBack, item.uri);
+                return updateState({sound: status, audio: item});
+            }
+        }
     }
 
     render() {
@@ -45,10 +76,9 @@ export default class AudioList extends Component {
                 return <View style={styles.container}>
                     <RecyclerListView dataProvider={dataProvider} layoutProvider={this.layoutProvider} rowRenderer={this.rowRenderer} />
                     <Option visible={this.state.modalVisible} item={this.audio}
-                        close={() => {
-                            this.audio = {};
-                            this.setState({...this.state, modalVisible: false});
-                        }} />
+                        close={() => this.showOption(false)}
+                        play={() => this.playAudio(this.audio)}
+                        addPlayList={() => {}} />
                 </View>
             }}
         </AudioContext.Consumer>
