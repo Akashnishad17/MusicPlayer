@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export const convertTime = (minutes) => {
     if(minutes){
         const hr = minutes / 60;
@@ -21,4 +23,8 @@ export const convertTime = (minutes) => {
     }
 
     return '00:00';
+};
+
+export const storeAudio = async(audio, index) => {
+    await AsyncStorage.setItem('audio', JSON.stringify({audio, index}));
 };

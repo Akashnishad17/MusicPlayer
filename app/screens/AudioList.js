@@ -5,8 +5,6 @@ import { RecyclerListView, LayoutProvider } from 'recyclerlistview';
 import AudioItem from '../components/AudioItem';
 import color from '../config/color';
 import Option from '../components/Option';
-import { Audio } from 'expo-av';
-import { pause, play, playNext, resume } from '../config/AudioController';
 
 export default class AudioList extends Component {
     static contextType = AudioContext;
@@ -15,10 +13,9 @@ export default class AudioList extends Component {
         super(props);
         
         this.state = {
-            modalVisible: false
+            modalVisible: false,
+            audio: {}
         };
-
-        this.audio = {};
     }
 
     layoutProvider = new LayoutProvider((index) => 'audio', (type, dim) => {
@@ -34,49 +31,31 @@ export default class AudioList extends Component {
     });
 
     rowRenderer = (type, item, index, extendedState) => {
-        const {audio} = this.context;
+        const {audioIndex, playAudio} = this.context;
 
         return <AudioItem title={item.filename} duration={item.duration} 
             options={() => this.showOption(true, item)}
-            play={() => this.playAudio(item)}
+            play={() => playAudio(item)}
             isPlaying={extendedState.isPlaying}
-            active={audio.id === item.id} />
+            active={audioIndex === index} />
     }
 
-    showOption = (visible, audio) => {
-        this.audio = audio;
-        this.setState({...this.state, modalVisible: visible});
+    showOption = (modalVisible, audio) => {
+        this.setState({...this.state, modalVisible, audio});
     }
 
-    playAudio = async(item) => {
+    playAudio = () => {
+        this.context.playAudio(this.state.audio);
         this.showOption(false, {});
-        const {playBack, sound, audio, updateState} = this.context;
+    }
 
-        if(sound === null) {
-            const playBack = new Audio.Sound();
-            const status = await play(playBack, item.uri);
-            return updateState({
-                playBack: playBack, 
-                sound: status, 
-                audio: item,
-                isPlaying: true,
-            });
-        }
-
-        if(sound.isLoaded) {
-            if(audio.id === item.id) {
-                const status = sound.isPlaying ? await pause(playBack) : await resume(playBack);
-                return updateState({sound: status, isPlaying: !sound.isPlaying});
-            } else {
-                const status = await playNext(playBack, item.uri);
-                return updateState({sound: status, audio: item, isPlaying: true});
-            }
-        }
+    addPlayList = () => {
+        this.props.navigation.navigate('Play List');
     }
 
     render() {
         return <AudioContext.Consumer>
-            {({dataProvider, isPlaying}) => {
+            {({dataProvider, isPlaying, audio}) => {
                 return <View style={styles.container}>
                     <RecyclerListView 
                         dataProvider={dataProvider} 
@@ -85,10 +64,11 @@ export default class AudioList extends Component {
                         extendedState={{isPlaying}} />
                     <Option 
                         visible={this.state.modalVisible} 
-                        item={this.audio}
+                        item={this.state.audio}
+                        isPlaying={isPlaying && this.state.audio.id == audio.id}
                         close={() => this.showOption(false, {})}
-                        play={() => this.playAudio(this.audio)}
-                        addPlayList={() => {}} />
+                        play={() => this.playAudio()}
+                        addPlayList={() => this.addPlayList()} />
                 </View>
             }}
         </AudioContext.Consumer>
