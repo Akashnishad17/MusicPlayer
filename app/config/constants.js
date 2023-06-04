@@ -18,5 +18,6 @@ export default constants = {
     cancel: 'Cancel',
     permissionRequired: 'Permission Required',
     pemissionDescription: 'This app needs permission to read audio files.',
-    musicAlreadyAdded: 'Music Already Added to Play List'
+    musicAlreadyAdded: 'Music Already Added to Play List',
+    DefaultPlayList: 'My Favorite'
 };

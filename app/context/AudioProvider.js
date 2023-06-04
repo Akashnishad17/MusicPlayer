@@ -49,7 +49,7 @@ export default class AudioProvider extends Component {
         if(playList == null) {
             const defaultPlayList = {
                 id: Date.now(),
-                title: 'My Favorite',
+                title: constants.DefaultPlayList,
                 audios: []
             };
 
