@@ -1,12 +1,16 @@
 import React, { useContext, useState } from 'react';
-import { StyleSheet, Text, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, Text, ScrollView, TouchableOpacity, FlatList, Alert } from 'react-native';
 import PlayListModal from '../components/PlayListModal';
 import color from '../config/color';
 import { storePlayList } from '../config/AsyncStorage';
 import { AudioContext } from '../context/AudioProvider';
+import constants from '../config/constants';
+import PlayListDetail from '../components/PlayListDetail';
 
 const PlayList = () => {
     const [modalVisible, setModalVisible] = useState(false);
+    const [playListModalVisible, setPlayListModalVisible] = useState(false);
+    const [currentPlayList, setPlayList] = useState({});
     const context = useContext(AudioContext);
     const {playList, addToPlayList, updateState} = context;
 
@@ -32,10 +36,51 @@ const PlayList = () => {
         storePlayList(updatedList);
     }
 
+    const banner = (item) => {
+        if(addToPlayList) {
+            let audioExist = false;
+
+            const updatedList = playList.filter(el => {
+                if(el.id === item.id) {
+                    for(let audio of el.audios) {
+                        if(audio.id == addToPlayList.id) {
+                            audioExist = true;
+                            return el;
+                        }
+                    }
+
+                    el.audios = [...el.audios, addToPlayList];
+                }
+
+                return el;
+            });
+
+            if(audioExist) {
+                Alert.alert(constants.musicAlreadyAdded, 
+                `${addToPlayList.filename} is already present in the Play List`);
+            }
+
+            updateState({
+                addToPlayList: null,
+                playList: updatedList
+            });
+    
+            storePlayList(updatedList);
+        }
+        
+        showPlayList(item, true);
+    };
+
+    const showPlayList = (item, visible) => {
+        setPlayList(item);
+        setPlayListModalVisible(visible);
+    }
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             {playList.length ? playList.map(item => 
                 <TouchableOpacity 
+                    onPress={() => banner(item)}
                     key={item.id.toString()} 
                     style={styles.banner}>
                     <Text>{item.title}</Text>
@@ -49,9 +94,13 @@ const PlayList = () => {
             </TouchableOpacity>
             <PlayListModal 
                 visible={modalVisible}
-                close={() => setModalVisible(false)} 
-                submit={() => {}}
+                close={() => setModalVisible(false)}
                 createPlayList={createPlayList}
+            />
+            <PlayListDetail 
+                visible={playListModalVisible}
+                close={() => showPlayList({}, false)}
+                playList={currentPlayList}
             />
         </ScrollView>
     );

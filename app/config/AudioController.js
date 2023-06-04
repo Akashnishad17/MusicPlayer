@@ -1,15 +1,20 @@
 export const load = async(playBack, uri) => {
     try{
-        return await playBack.loadAsync({uri}, {shouldPlay: false});
+        return await playBack.loadAsync(
+            {uri}, 
+            {shouldPlay: false, progressUpdateIntervalMillis: 1000}
+        );
     } catch(error) {
         console.log('Error while loading audio', error.message);
     }
 }
 
-
 export const play = async(playBack, uri) => {
     try{
-        return await playBack.loadAsync({uri}, {shouldPlay: true});
+        return await playBack.loadAsync(
+            {uri}, 
+            {shouldPlay: true, progressUpdateIntervalMillis: 1000}
+        );
     } catch(error) {
         console.log('Error while playing audio', error.message);
     }
@@ -38,5 +43,13 @@ export const playNext = async(playBack, uri) => {
         return await play(playBack, uri);
     } catch(error) {
         console.log('Error while playing next audio', error.message);
+    }
+}
+
+export const move = async(playBack, position) => {
+    try {
+        return await playBack.setPositionAsync(position);
+    } catch(error) {
+        console.log('Error while setting postion for audio', error.message);
     }
 }

@@ -9,6 +9,10 @@ export const convertTime = (minutes) => {
             return `0${minute}:0${sec}`;
         }
 
+        if(sec == 60) {
+            return `0${minute + 1}:00`;
+        }
+
         if(minute < 10) {
             return `0${minute}:${sec}`;
         }

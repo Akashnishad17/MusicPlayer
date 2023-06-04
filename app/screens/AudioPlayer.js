@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import color from '../config/color';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -6,6 +6,8 @@ import Slider from '@react-native-community/slider';
 import Player from '../components/Player';
 import { AudioContext } from '../context/AudioProvider';
 import constants from '../config/constants';
+import { convertTime } from '../config/service';
+import { move } from '../config/AudioController';
 
 const {width} = Dimensions.get(constants.window);
 
@@ -18,10 +20,22 @@ const AudioPlayer = () => {
         playBackPosition, 
         playBackDuration,
         playAudio,
-        playNextBy
+        playNextBy,
+        playBack,
+        sound,
+        updateState
     } = useContext(AudioContext);
 
     const calculateSlider = () => playBackPosition && playBackDuration ? playBackPosition / playBackDuration : 0;
+
+    const updateSlider = async(position) => {
+        const status = await move(playBack, sound.durationMillis * position);
+
+        updateState({
+            sound: status,
+            playBackPosition: status.positionMillis
+        });
+    }
 
     return (
         <View style={styles.container}>
@@ -35,6 +49,10 @@ const AudioPlayer = () => {
             </View>
             <View style={styles.player}>
                 <Text numberOfLines={1} style={styles.title}>{audio.filename}</Text>
+                <View style={styles.time}>
+                    <Text>{convertTime(playBackPosition / 1000)}</Text>
+                    <Text>{convertTime(audio.duration)}</Text>
+                </View>
                 <Slider 
                     style={styles.slider} 
                     minimumValue={0}
@@ -42,6 +60,7 @@ const AudioPlayer = () => {
                     value={calculateSlider()}
                     minimumTrackTintColor={color.FONT_MEDIUM}
                     maximumTrackTintColor={color.ACTIVE_BG}
+                    onSlidingComplete={(value) => updateSlider(value)}
                 />
                 <View style={styles.controller}>
                     <Player 
@@ -96,6 +115,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignContent: 'center',
         paddingBottom: 20
+    },
+    time: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 15
     }
 });
 
