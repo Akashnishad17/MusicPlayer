@@ -5,6 +5,7 @@ import { RecyclerListView, LayoutProvider } from 'recyclerlistview';
 import AudioItem from '../components/AudioItem';
 import color from '../config/color';
 import Option from '../components/Option';
+import constants from '../config/constants';
 
 export default class AudioList extends Component {
     static contextType = AudioContext;
@@ -18,10 +19,10 @@ export default class AudioList extends Component {
         };
     }
 
-    layoutProvider = new LayoutProvider((index) => 'audio', (type, dim) => {
+    layoutProvider = new LayoutProvider((index) => constants.audio, (type, dim) => {
         switch(type) {
-            case 'audio':
-                dim.width = Dimensions.get('window').width;
+            case constants.audio:
+                dim.width = Dimensions.get(constants.window).width;
                 dim.height = 70;
                 break;
             default:
@@ -33,11 +34,14 @@ export default class AudioList extends Component {
     rowRenderer = (type, item, index, extendedState) => {
         const {audioIndex, playAudio} = this.context;
 
-        return <AudioItem title={item.filename} duration={item.duration} 
+        return <AudioItem 
+            title={item.filename} 
+            duration={item.duration} 
             options={() => this.showOption(true, item)}
             play={() => playAudio(item)}
             isPlaying={extendedState.isPlaying}
-            active={audioIndex === index} />
+            active={audioIndex === index} 
+        />
     }
 
     showOption = (modalVisible, audio) => {
@@ -50,7 +54,9 @@ export default class AudioList extends Component {
     }
 
     addPlayList = () => {
-        this.props.navigation.navigate('Play List');
+        this.context.updateState({addToPlayList: this.state.audio});
+        this.showOption(false, {});
+        this.props.navigation.navigate(constants.PlayList);
     }
 
     render() {
@@ -61,14 +67,16 @@ export default class AudioList extends Component {
                         dataProvider={dataProvider} 
                         layoutProvider={this.layoutProvider} 
                         rowRenderer={this.rowRenderer}
-                        extendedState={{isPlaying}} />
+                        extendedState={{isPlaying}} 
+                    />
                     <Option 
                         visible={this.state.modalVisible} 
                         item={this.state.audio}
                         isPlaying={isPlaying && this.state.audio.id == audio.id}
                         close={() => this.showOption(false, {})}
                         play={() => this.playAudio()}
-                        addPlayList={() => this.addPlayList()} />
+                        addPlayList={() => this.addPlayList()} 
+                    />
                 </View>
             }}
         </AudioContext.Consumer>

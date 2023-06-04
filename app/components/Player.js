@@ -1,18 +1,19 @@
 import React from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import color from '../config/color';
+import constants from '../config/constants';
 
 export default function Player(props) {
     const {type, size = 40, iconColor = color.FONT, press, others} = props;
     const getIcon = (type) => {
         switch(type) {
-            case 'PLAY':
+            case constants.PLAY:
                 return 'pausecircle';
-            case 'PAUSE':
+            case constants.PAUSE:
                 return 'playcircleo';
-            case 'NEXT':
+            case constants.NEXT:
                 return 'forward';
-            case 'PREV':
+            case constants.PREV:
                 return 'banckward';
         }
     }

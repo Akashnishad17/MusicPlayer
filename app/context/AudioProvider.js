@@ -2,10 +2,10 @@ import React, { Component, createContext } from 'react';
 import { Text, View, Alert, StyleSheet } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { DataProvider } from 'recyclerlistview';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
 import { load, pause, playNext, resume } from '../config/AudioController';
-import { storeAudio } from '../config/service';
+import { loadAudio, loadPlayList, storeAudio } from '../config/AsyncStorage';
+import constants from '../config/constants';
 
 export const AudioContext = createContext();
 export default class AudioProvider extends Component {
@@ -23,31 +23,44 @@ export default class AudioProvider extends Component {
             audioIndex: -1,
             playBackPosition: null,
             playBackDuration: null,
-            audioCount: 0
+            audioCount: 0,
+            playList: [],
+            addToPlayList: null
         };
     }
 
     loadAudio = async() => {
-        let audioData = await AsyncStorage.getItem('audio');
+        const audioData = await loadAudio();
+        let playList = await loadPlayList();
         let audio, audioIndex;
 
         if(audioData === null) {
             audio = this.state.audios[0];
             audioIndex = 0;
         } else {
-            audioData = JSON.parse(audioData);
             audio = audioData.audio;
             audioIndex = audioData.index;
         }
 
+        if(playList == null) {
+            const defaultPlayList = {
+                id: Date.now(),
+                title: 'My Favorite',
+                audios: []
+            };
+
+            playList = [defaultPlayList];
+        }
+
         const playBack = new Audio.Sound();
-        const status = await load(playBack, audio.uri);
+        const sound = await load(playBack, audio.uri);
 
         this.updateState({
             audio, 
             audioIndex, 
             playBack, 
-            sound: status
+            sound,
+            playList
         });
 
         playBack.setOnPlaybackStatusUpdate(this.setOnPlaybackStatusUpdate);
@@ -101,12 +114,12 @@ export default class AudioProvider extends Component {
     }
 
     permissionAlert = () => {
-        Alert.alert('Permission Required', 
-            'This app needs permission to read audio files.', [{
-             text: 'Allow',
+        Alert.alert(constants.permissionRequired, constants.pemissionDescription, 
+        [{
+             text: constants.allow,
              onPress: () => this.getPermissions() 
         }, {
-            text: 'Cancel',
+            text: constants.cancel,
             onPress: () => this.permissionAlert()
         }]);
     }
@@ -115,11 +128,11 @@ export default class AudioProvider extends Component {
         const {dataProvider, audios} = this.state;
 
         let media = await MediaLibrary.getAssetsAsync({
-            mediaType: 'audio'
+            mediaType: constants.audio
         });
 
         media = await MediaLibrary.getAssetsAsync({
-            mediaType: 'audio',
+            mediaType: constants.audio,
             first: media.totalCount,
         });
 
@@ -141,9 +154,9 @@ export default class AudioProvider extends Component {
             if(permission.canAskAgain) {
                 const {status, canAskAgain} = await MediaLibrary.requestPermissionsAsync();
 
-                if(status === 'granted') {
+                if(status === constants.granted) {
                     this.getAudios();
-                } else if(status === 'denied') {
+                } else if(status === constants.denied) {
                     if(canAskAgain) {
                         this.permissionAlert();
                     } else {
@@ -174,7 +187,9 @@ export default class AudioProvider extends Component {
             audioIndex,
             playBackPosition,
             playBackDuration,
-            audioCount
+            audioCount,
+            playList,
+            addToPlayList
         } = this.state;
 
         if(permissionError) {
@@ -194,6 +209,8 @@ export default class AudioProvider extends Component {
                     audioIndex,
                     playBackPosition,
                     playBackDuration,
+                    playList,
+                    addToPlayList,
                     updateState: this.updateState,
                     playAudio: this.playAudio,
                     playNextBy: this.playNextBy

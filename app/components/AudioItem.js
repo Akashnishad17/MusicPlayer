@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Dimensions, TouchableWithoutFeedback } from 're
 import { Entypo } from '@expo/vector-icons'; 
 import color from '../config/color';
 import { convertTime } from '../config/service';
+import constants from '../config/constants';
 
 const renderedPlayPauseIcon = (isPlaying) => {
     if(isPlaying) {
@@ -43,7 +44,7 @@ export default function AudioItem({title, duration, options, play, isPlaying, ac
 };
 
 
-const {width, height} = Dimensions.get('window');
+const {width, height} = Dimensions.get(constants.window);
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',

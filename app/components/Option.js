@@ -16,12 +16,12 @@ export default function Option({visible, close, item, play, isPlaying, addPlayLi
                         <Text style={styles.option}>Add to Play List</Text>
                     </TouchableWithoutFeedback>
                     <TouchableWithoutFeedback onPress={close}>
-                    <Text style={styles.option}>Close</Text>
+                        <Text style={styles.option}>Close</Text>
                     </TouchableWithoutFeedback>              
                 </View>
             </View>
             <TouchableWithoutFeedback onPress={close}>
-                <View style={styles.modalBG}></View>
+                <View style={styles.modalBG} />
             </TouchableWithoutFeedback>  
         </Modal>
     </>

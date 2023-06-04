@@ -5,9 +5,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import Player from '../components/Player';
 import { AudioContext } from '../context/AudioProvider';
-import { pause, resume } from '../config/AudioController';
+import constants from '../config/constants';
 
-const {width} = Dimensions.get('window');
+const {width} = Dimensions.get(constants.window);
 
 const AudioPlayer = () => {
     const {
@@ -45,17 +45,17 @@ const AudioPlayer = () => {
                 />
                 <View style={styles.controller}>
                     <Player 
-                        type='PREV' 
+                        type={constants.PREV}
                         press={() => playNextBy(-1)}
                     />
                     <Player 
                         press={() => playAudio(audio)}
                         style={{marginHorizontal: 25}} 
-                        type={isPlaying ? 'PLAY' : 'PAUSE'} 
+                        type={isPlaying ? constants.PLAY : constants.PAUSE} 
                     />
                     <Player 
                         press={() => playNextBy(1)}
-                        type='NEXT' 
+                        type={constants.NEXT}
                     />
                 </View>
             </View>
