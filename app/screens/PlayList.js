@@ -37,9 +37,9 @@ const PlayList = () => {
     }
 
     const banner = (item) => {
-        if(addToPlayList) {
-            let audioExist = false;
+        let audioExist = false;
 
+        if(addToPlayList) {
             const updatedList = playList.filter(el => {
                 if(el.id === item.id) {
                     for(let audio of el.audios) {
@@ -68,7 +68,9 @@ const PlayList = () => {
             storePlayList(updatedList);
         }
         
-        showPlayList(item, true);
+        if(!audioExist) {
+            showPlayList(item, true);
+        }
     };
 
     const showPlayList = (item, visible) => {
