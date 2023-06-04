@@ -1,6 +1,7 @@
 export default constants = {
     audio: 'audio',
     playList: 'playList',
+    currentPlayList: 'currentPlayList',
     granted: 'granted',
     denied: 'denied',
     window: 'window',
@@ -11,6 +12,8 @@ export default constants = {
     AudioList: 'Audio List',
     AudioPlayer: 'Audio Player',
     PlayList: 'Play List',
+    PlayListHome: 'Play List Home',
+    PlayListDetail: 'Play List Detail',
     allow: 'Allow',
     cancel: 'Cancel',
     permissionRequired: 'Permission Required',

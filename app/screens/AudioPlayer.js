@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import color from '../config/color';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -23,7 +23,9 @@ const AudioPlayer = () => {
         playNextBy,
         playBack,
         sound,
-        updateState
+        updateState,
+        currentPlayList,
+        currentPlayListIndex
     } = useContext(AudioContext);
 
     const calculateSlider = () => playBackPosition && playBackDuration ? playBackPosition / playBackDuration : 0;
@@ -37,9 +39,22 @@ const AudioPlayer = () => {
         });
     }
 
+    const getCounter = () => {
+        if(currentPlayList === null) {
+            return `${audioIndex + 1} / ${audioCount}`;
+        } else {
+            return `${currentPlayListIndex + 1} / ${currentPlayList.audios.length}`;
+        }
+    }
+
     return (
         <View style={styles.container}>
-            <Text style={styles.count}>{`${audioIndex + 1} / ${audioCount}`}</Text>
+            <View style={styles.header}>
+                <Text>
+                    {currentPlayList ? `Play List - ${currentPlayList.title}` : 'Audios'}    
+                </Text>
+                <Text>{getCounter()}</Text>
+            </View>
             <View style={styles.banner}>
                 <MaterialCommunityIcons 
                     name="music-circle" 
@@ -47,7 +62,7 @@ const AudioPlayer = () => {
                     color={isPlaying ? color.ACTIVE_BG : color.FONT_MEDIUM} 
                 />
             </View>
-            <View style={styles.player}>
+            <View>
                 <Text numberOfLines={1} style={styles.title}>{audio.filename}</Text>
                 <View style={styles.time}>
                     <Text>{convertTime(playBackPosition / 1000)}</Text>
@@ -87,7 +102,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     count: {
-        textAlign: 'right',
+        flexGrow: 50,
         padding: 15,
         color: color.FONT_LIGHT,
         fontSize: 14
@@ -97,8 +112,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    player: {
-
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 15,
+        color: color.FONT_LIGHT,
+        fontWeight: 16,
+        paddingTop: 5
     },
     title: {
         fontSize: 16,

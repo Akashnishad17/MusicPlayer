@@ -6,6 +6,7 @@ import AudioItem from '../components/AudioItem';
 import color from '../config/color';
 import Option from '../components/Option';
 import constants from '../config/constants';
+import { storeCurrentPlayList } from '../config/AsyncStorage';
 
 export default class AudioList extends Component {
     static contextType = AudioContext;
@@ -32,15 +33,15 @@ export default class AudioList extends Component {
     });
 
     rowRenderer = (type, item, index, extendedState) => {
-        const {audioIndex, playAudio} = this.context;
+        const {audio} = this.context;
 
         return <AudioItem 
             title={item.filename} 
             duration={item.duration} 
             options={() => this.showOption(true, item)}
-            play={() => playAudio(item)}
+            play={() => this.playAudio(item)}
             isPlaying={extendedState.isPlaying}
-            active={audioIndex === index} 
+            active={audio.id === item.id} 
         />
     }
 
@@ -48,8 +49,14 @@ export default class AudioList extends Component {
         this.setState({...this.state, modalVisible, audio});
     }
 
-    playAudio = () => {
-        this.context.playAudio(this.state.audio);
+    playAudio = (item) => {
+        this.context.updateState({
+            currentPlayList: null,
+            currentPlayListIndex: -1
+        });
+
+        storeCurrentPlayList(null, -1);
+        this.context.playAudio(item);
         this.showOption(false, {});
     }
 
@@ -74,7 +81,7 @@ export default class AudioList extends Component {
                         item={this.state.audio}
                         isPlaying={isPlaying && this.state.audio.id == audio.id}
                         close={() => this.showOption(false, {})}
-                        play={() => this.playAudio()}
+                        play={() => this.playAudio(this.state.audio)}
                         addPlayList={() => this.addPlayList()} 
                     />
                 </View>

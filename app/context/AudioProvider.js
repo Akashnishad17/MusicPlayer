@@ -4,7 +4,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { DataProvider } from 'recyclerlistview';
 import { Audio } from 'expo-av';
 import { load, pause, playNext, resume } from '../config/AudioController';
-import { loadAudio, loadPlayList, storeAudio } from '../config/AsyncStorage';
+import { loadAudio, loadCurrentPlayList, loadPlayList, storeAudio } from '../config/AsyncStorage';
 import constants from '../config/constants';
 
 export const AudioContext = createContext();
@@ -25,14 +25,18 @@ export default class AudioProvider extends Component {
             playBackDuration: null,
             audioCount: 0,
             playList: [],
-            addToPlayList: null
+            addToPlayList: null,
+            currentPlayList: null,
+            currentPlayListIndex: -1
         };
     }
 
     loadAudio = async() => {
         const audioData = await loadAudio();
         let playList = await loadPlayList();
+        const currentPlayListResult = await loadCurrentPlayList();
         let audio, audioIndex;
+        let currentPlayList = null, currentPlayListIndex = -1;
 
         if(audioData === null) {
             audio = this.state.audios[0];
@@ -52,6 +56,11 @@ export default class AudioProvider extends Component {
             playList = [defaultPlayList];
         }
 
+        if(currentPlayListResult !== null) {
+            currentPlayList = currentPlayListResult.playList;
+            currentPlayListIndex = currentPlayListResult.playListIndex;
+        }
+
         const playBack = new Audio.Sound();
         const sound = await load(playBack, audio.uri);
 
@@ -60,7 +69,9 @@ export default class AudioProvider extends Component {
             audioIndex, 
             playBack, 
             sound,
-            playList
+            playList,
+            currentPlayList,
+            currentPlayListIndex
         });
 
         playBack.setOnPlaybackStatusUpdate(this.setOnPlaybackStatusUpdate);
@@ -81,9 +92,16 @@ export default class AudioProvider extends Component {
     }
 
     playNextBy = (shift) => {
-        const nextIndex = (this.state.audioIndex + shift + this.state.audioCount) % this.state.audioCount;
-        const audio = this.state.audios[nextIndex];
-        this.playAudio(audio);
+        if(this.state.currentPlayList === null) {
+            const nextIndex = (this.state.audioIndex + shift + this.state.audioCount) % this.state.audioCount;
+            const audio = this.state.audios[nextIndex];
+            this.playAudio(audio);
+        } else {
+            const nextIndex = (this.state.currentPlayListIndex + shift + this.state.currentPlayList.audios.length) % this.state.currentPlayList.audios.length;
+            const audio = this.state.currentPlayList.audios[nextIndex];
+            this.updateState({currentPlayListIndex: nextIndex});
+            this.playAudio(audio);
+        }
     }
 
     playAudio = async(item) => {
@@ -99,7 +117,7 @@ export default class AudioProvider extends Component {
                 });
             } else {
                 const status = await playNext(playBack, item.uri);
-                const index = audios.indexOf(item);
+                const index = audios.findIndex(({id}) => id === item.id);
 
                 this.updateState({
                     sound: status, 
@@ -189,7 +207,9 @@ export default class AudioProvider extends Component {
             playBackDuration,
             audioCount,
             playList,
-            addToPlayList
+            addToPlayList,
+            currentPlayList,
+            currentPlayListIndex
         } = this.state;
 
         if(permissionError) {
@@ -211,6 +231,8 @@ export default class AudioProvider extends Component {
                     playBackDuration,
                     playList,
                     addToPlayList,
+                    currentPlayList,
+                    currentPlayListIndex,
                     updateState: this.updateState,
                     playAudio: this.playAudio,
                     playNextBy: this.playNextBy

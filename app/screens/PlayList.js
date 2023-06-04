@@ -1,16 +1,13 @@
 import React, { useContext, useState } from 'react';
-import { StyleSheet, Text, ScrollView, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { StyleSheet, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import PlayListModal from '../components/PlayListModal';
 import color from '../config/color';
 import { storePlayList } from '../config/AsyncStorage';
 import { AudioContext } from '../context/AudioProvider';
 import constants from '../config/constants';
-import PlayListDetail from '../components/PlayListDetail';
 
-const PlayList = () => {
+const PlayList = ({navigation}) => {
     const [modalVisible, setModalVisible] = useState(false);
-    const [playListModalVisible, setPlayListModalVisible] = useState(false);
-    const [currentPlayList, setPlayList] = useState({});
     const context = useContext(AudioContext);
     const {playList, addToPlayList, updateState} = context;
 
@@ -69,14 +66,9 @@ const PlayList = () => {
         }
         
         if(!audioExist) {
-            showPlayList(item, true);
+            navigation.navigate(constants.PlayListDetail, item);
         }
     };
-
-    const showPlayList = (item, visible) => {
-        setPlayList(item);
-        setPlayListModalVisible(visible);
-    }
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -98,11 +90,6 @@ const PlayList = () => {
                 visible={modalVisible}
                 close={() => setModalVisible(false)}
                 createPlayList={createPlayList}
-            />
-            <PlayListDetail 
-                visible={playListModalVisible}
-                close={() => showPlayList({}, false)}
-                playList={currentPlayList}
             />
         </ScrollView>
     );

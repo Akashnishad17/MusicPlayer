@@ -1,62 +1,53 @@
 import React, { useContext } from 'react';
-import { FlatList, Modal, StyleSheet, Text, View, Dimensions, TouchableWithoutFeedback } from 'react-native';
-import constants from '../config/constants';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import color from '../config/color';
 import AudioItem from './AudioItem';
 import { AudioContext } from '../context/AudioProvider';
+import { storeCurrentPlayList } from '../config/AsyncStorage';
 
-const PlayListDetail = ({visible, playList, close}) => {
-    const {playAudio, isPlaying, audio} = useContext(AudioContext);
+const PlayListDetail = (props) => {
+    const {playAudio, isPlaying, audio, updateState} = useContext(AudioContext);
+    const playList = props.route.params;
+
+    const playListAudio = (item) => {
+        const playListIndex = playList.audios.findIndex(({id}) => id === item.id);
+
+        updateState({
+            currentPlayList: playList,
+            currentPlayListIndex: playListIndex
+        });
+
+        storeCurrentPlayList(playList, playListIndex);
+        playAudio(item);
+    }
 
     return (
-        <Modal 
-            transparent 
-            visible={visible}
-            animationType='slide'
-            onRequestClose={close}>
-            <View style={styles.container}>
-                <Text style={styles.title}>{playList.title}</Text>
-                <FlatList 
-                    contentContainerStyle={styles.list}
-                    data={playList.audios} 
-                    keyExtractor={item => item.id.toString()}
-                    renderItem={({item}) => 
-                        <View style={{marginBottom: 10}}>
-                            <AudioItem 
-                                title={item.filename} 
-                                duration={item.duration} 
-                                options={() => {}}
-                                play={() => playAudio(item)}
-                                isPlaying={isPlaying}
-                                active={audio.id === item.id} 
-                            />
-                        </View>
-                    }
-                />
-            </View>
-            <TouchableWithoutFeedback onPress={close}>
-                <View style={[StyleSheet.absoluteFillObject, styles.modalBG]} />
-            </TouchableWithoutFeedback>
-        </Modal>
+        <View style={styles.container}>
+            <Text style={styles.title}>{playList.title}</Text>
+            <FlatList 
+                contentContainerStyle={styles.list}
+                data={playList.audios} 
+                keyExtractor={item => item.id.toString()}
+                renderItem={({item}) => 
+                    <View style={{marginBottom: 10}}>
+                        <AudioItem 
+                            title={item.filename} 
+                            duration={item.duration} 
+                            options={() => {}}
+                            play={() => playListAudio(item)}
+                            isPlaying={isPlaying}
+                            active={audio.id === item.id} 
+                        />
+                    </View>
+                }
+            />
+        </View>
     );
 };
 
-const {width, height} = Dimensions.get(constants.window);
-
 const styles = StyleSheet.create({
     container: {
-        position: 'absolute',
-        bottom: 0,
-        alignSelf: 'center',
-        maxHeight: height - 150,
-        width: width - 15,
-        backgroundColor: color.ACTIVE_FONT,
-        borderTopRightRadius: 30,
-        borderTopLeftRadius: 30
-    },
-    modalBG: {
-        backgroundColor: color.MODAL_BG,
-        zIndex: -1
+        alignSelf: 'center'
     },
     list: {
         padding: 20
@@ -66,8 +57,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         paddingVertical: 5,
         fontWeight: 'bold',
-        color: color.ACTIVE_BG,
-        marginTop: 10
+        color: color.ACTIVE_BG
     }
 });
 

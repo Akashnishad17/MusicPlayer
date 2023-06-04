@@ -25,3 +25,11 @@ export const loadPlayList = async() => {
 export const storePlayList = async(playList) => {
     setItem(constants.playList, playList);
 }
+
+export const storeCurrentPlayList = async(playList, playListIndex) => {
+    setItem(constants.currentPlayList, {playList, playListIndex});
+}
+
+export const loadCurrentPlayList = async() => {
+    return await getItem(constants.currentPlayList);
+}
