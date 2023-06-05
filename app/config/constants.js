@@ -2,6 +2,7 @@ export default constants = {
     audio: 'audio',
     playList: 'playList',
     currentPlayList: 'currentPlayList',
+    playBackPosition: 'playBackPosition',
     granted: 'granted',
     denied: 'denied',
     window: 'window',
@@ -19,5 +20,9 @@ export default constants = {
     permissionRequired: 'Permission Required',
     pemissionDescription: 'This app needs permission to read audio files.',
     musicAlreadyAdded: 'Music Already Added to Play List',
-    DefaultPlayList: 'My Favorite'
+    DefaultPlayList: 'My Favorite',
+    addToPlayList: 'Add To Play List',
+    removeFromPlayList: 'Remove From Play List',
+    default: 'default',
+    new: 'new'
 };

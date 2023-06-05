@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, StatusBar, StyleSheet, View, Text, TouchableWithoutFeedback } from 'react-native';
 import color from '../config/color';
 
-export default function Option({visible, close, item, play, isPlaying, addPlayList}) {
+export default function Option({visible, close, item, play, isPlaying, playList, option}) {
     return <>
         <StatusBar hidden />
         <Modal animationType='slide' transparent visible={visible}>
@@ -12,8 +12,8 @@ export default function Option({visible, close, item, play, isPlaying, addPlayLi
                     <TouchableWithoutFeedback onPress={play}>
                         <Text style={styles.option}>{isPlaying ? 'Pause' : 'Play'}</Text>
                     </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={addPlayList}>
-                        <Text style={styles.option}>Add to Play List</Text>
+                    <TouchableWithoutFeedback onPress={playList}>
+                        <Text style={styles.option}>{option}</Text>
                     </TouchableWithoutFeedback>
                     <TouchableWithoutFeedback onPress={close}>
                         <Text style={styles.option}>Close</Text>

@@ -60,7 +60,7 @@ export default class AudioList extends Component {
         this.showOption(false, {});
     }
 
-    addPlayList = () => {
+    addToPlayList = () => {
         this.context.updateState({addToPlayList: this.state.audio});
         this.showOption(false, {});
         this.props.navigation.navigate(constants.PlayList);
@@ -82,7 +82,8 @@ export default class AudioList extends Component {
                         isPlaying={isPlaying && this.state.audio.id == audio.id}
                         close={() => this.showOption(false, {})}
                         play={() => this.playAudio(this.state.audio)}
-                        addPlayList={() => this.addPlayList()} 
+                        playList={() => this.addToPlayList()} 
+                        option={constants.addToPlayList}
                     />
                 </View>
             }}

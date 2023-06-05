@@ -3,8 +3,8 @@ import { Text, View, Alert, StyleSheet } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { DataProvider } from 'recyclerlistview';
 import { Audio } from 'expo-av';
-import { load, pause, playNext, resume } from '../config/AudioController';
-import { loadAudio, loadCurrentPlayList, loadPlayList, storeAudio } from '../config/AsyncStorage';
+import { load, move, pause, playNext, resume } from '../config/AudioController';
+import { loadAudio, loadCurrentPlayList, loadLastPlayBackPosition, loadPlayList, storeAudio, storeCurrentPlayList, storeLastPlayBackPosition, storePlayList } from '../config/AsyncStorage';
 import constants from '../config/constants';
 
 export const AudioContext = createContext();
@@ -35,6 +35,7 @@ export default class AudioProvider extends Component {
         const audioData = await loadAudio();
         let playList = await loadPlayList();
         const currentPlayListResult = await loadCurrentPlayList();
+        const playBackPosition = await loadLastPlayBackPosition();
         let audio, audioIndex;
         let currentPlayList = null, currentPlayListIndex = -1;
 
@@ -46,11 +47,12 @@ export default class AudioProvider extends Component {
             audioIndex = audioData.index;
         }
 
-        if(playList == null) {
+        if(playList == null || playList.length === 0) {
             const defaultPlayList = {
                 id: Date.now(),
                 title: constants.DefaultPlayList,
-                audios: []
+                audios: [],
+                type: constants.default
             };
 
             playList = [defaultPlayList];
@@ -62,7 +64,11 @@ export default class AudioProvider extends Component {
         }
 
         const playBack = new Audio.Sound();
-        const sound = await load(playBack, audio.uri);
+        let sound = await load(playBack, audio.uri);
+
+        if(playBackPosition) {
+            sound = await move(playBack, playBackPosition);
+        }
 
         this.updateState({
             audio, 
@@ -71,11 +77,14 @@ export default class AudioProvider extends Component {
             sound,
             playList,
             currentPlayList,
-            currentPlayListIndex
+            currentPlayListIndex,
+            playBackPosition,
+            playBackDuration: sound.durationMillis
         });
 
         playBack.setOnPlaybackStatusUpdate(this.setOnPlaybackStatusUpdate);
         storeAudio(audio, audioIndex);
+        storePlayList(playList);
     }
 
     setOnPlaybackStatusUpdate = (playBackStatus) => {
@@ -84,6 +93,8 @@ export default class AudioProvider extends Component {
                 playBackPosition: playBackStatus.positionMillis,
                 playBackDuration: playBackStatus.durationMillis
             });
+
+            storeLastPlayBackPosition(playBackStatus.positionMillis);
         }
 
         if(playBackStatus.didJustFinish) {
@@ -129,6 +140,49 @@ export default class AudioProvider extends Component {
                 storeAudio(item, index);
             }
         }
+    }
+
+    removeFromPlayList = (id, index) => {
+        let currentPlayList = this.state.currentPlayList;
+        let currentPlayListIndex = this.state.currentPlayListIndex;
+
+        if(this.state.currentPlayList && this.state.currentPlayList.id === id) {
+            if(currentPlayListIndex == index) {
+                currentPlayList = null;
+                currentPlayListIndex = -1;
+            } else if(index < currentPlayListIndex) {
+                currentPlayListIndex--;
+            }
+        }
+
+        this.updateState({
+            currentPlayList,
+            currentPlayListIndex
+        });
+
+        storePlayList(this.state.playList);
+        storeCurrentPlayList(currentPlayList, currentPlayListIndex);
+    }
+
+    removePlayList = (id) => {
+        let currentPlayList = this.state.currentPlayList;
+        let currentPlayListIndex = this.state.currentPlayListIndex;
+
+        if(currentPlayList && currentPlayList.id === id) {
+            currentPlayList = null,
+            currentPlayListIndex = -1
+        }
+
+        const updatedList = this.state.playList.filter((item) => item.id !== id);
+        
+        this.updateState({
+            currentPlayList,
+            currentPlayListIndex,
+            playList: updatedList
+        });
+
+        storeCurrentPlayList(currentPlayList, currentPlayListIndex);
+        storePlayList(updatedList);
     }
 
     permissionAlert = () => {
@@ -235,7 +289,9 @@ export default class AudioProvider extends Component {
                     currentPlayListIndex,
                     updateState: this.updateState,
                     playAudio: this.playAudio,
-                    playNextBy: this.playNextBy
+                    playNextBy: this.playNextBy,
+                    removeFromPlayList: this.removeFromPlayList,
+                    removePlayList: this.removePlayList
                 }}>
                 {this.props.children}
             </AudioContext.Provider>

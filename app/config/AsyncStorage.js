@@ -33,3 +33,11 @@ export const storeCurrentPlayList = async(playList, playListIndex) => {
 export const loadCurrentPlayList = async() => {
     return await getItem(constants.currentPlayList);
 }
+
+export const storeLastPlayBackPosition = async(playBackPosition) => {
+    setItem(constants.playBackPosition, playBackPosition);
+}
+
+export const loadLastPlayBackPosition = async() => {
+    return getItem(constants.playBackPosition);
+}

@@ -21,7 +21,8 @@ const PlayList = ({navigation}) => {
         const newList = {
             id: Date.now(),
             title: name,
-            audios: audios
+            audios: audios,
+            type: constants.new
         };
 
         const updatedList = [...playList, newList];
@@ -73,7 +74,7 @@ const PlayList = ({navigation}) => {
     return (
         <ScrollView contentContainerStyle={styles.container}>
             {playList.length ? playList.map(item => 
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={() => banner(item)}
                     key={item.id.toString()} 
                     style={styles.banner}>
