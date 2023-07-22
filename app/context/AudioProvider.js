@@ -63,6 +63,16 @@ export default class AudioProvider extends Component {
             currentPlayListIndex = currentPlayListResult.playListIndex;
         }
 
+        await Audio.setAudioModeAsync({
+            staysActiveInBackground: true,
+            interruptionModeAndroid: 1,
+            shouldDuckAndroid: false,
+            playThroughEarpieceAndroid: false,
+            allowsRecordingIOS: false,
+            interruptionModeIOS: 1,
+            playsInSilentModeIOS: true,
+        });
+
         const playBack = new Audio.Sound();
         let sound = await load(playBack, audio.uri);
 
